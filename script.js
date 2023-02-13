@@ -161,7 +161,7 @@ class View {
     });
   }
 
-  //da chiedere a Max
+  //da chiedere a Max domani
   bindAddTodo(handler) {
     this.form.addEventListener("submit", (event) => {
       event.preventDefault();
