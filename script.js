@@ -5,13 +5,14 @@
  */
 class Model {
   constructor() {
+    //i dati non vengono cancellati al refresh della pagina ma persistono durante la sessione attiva
     this.todos = JSON.parse(localStorage.getItem("todos")) || [];
   }
-
+  //da commentare
   bindTodoListChanged(callback) {
     this.onTodoListChanged = callback;
   }
-
+  //i task modificati vengono salvati e persistono insieme a quelli già esistenti
   _commit(todos) {
     this.onTodoListChanged(todos);
     localStorage.setItem("todos", JSON.stringify(todos));
@@ -19,6 +20,7 @@ class Model {
 
   addTodo(todoText) {
     const todo = {
+      //controlla se ci sono già dei task per assegnare gli id dinamici a quelli successivi
       id: this.todos.length > 0 ? this.todos[this.todos.length - 1].id + 1 : 1,
       text: todoText,
       complete: false,
@@ -31,6 +33,7 @@ class Model {
 
   editTodo(id, updatedText) {
     this.todos = this.todos.map((todo) =>
+      //modificare il task selezionato
       todo.id === id
         ? { id: todo.id, text: updatedText, complete: todo.complete }
         : todo
@@ -40,6 +43,7 @@ class Model {
   }
 
   deleteTodo(id) {
+    //filtra la lista dei task e mostra a schermo quelli con id diverso da quello selezionato
     this.todos = this.todos.filter((todo) => todo.id !== id);
 
     this._commit(this.todos);
@@ -47,6 +51,7 @@ class Model {
 
   toggleTodo(id) {
     this.todos = this.todos.map((todo) =>
+      //controlla se il task è stato modificato o meno e modifica la proprietà
       todo.id === id
         ? { id: todo.id, text: todo.text, complete: !todo.complete }
         : todo
@@ -62,6 +67,7 @@ class Model {
  * Visual representation of the model.
  */
 class View {
+  //creo gli elementi html del form
   constructor() {
     this.app = this.getElement("#root");
     this.form = this.createElement("form");
@@ -80,7 +86,7 @@ class View {
     this._temporaryTodoText = "";
     this._initLocalListeners();
   }
-
+  //recupera il valore dell'input
   get _todoText() {
     return this.input.value;
   }
@@ -104,18 +110,18 @@ class View {
   }
 
   displayTodos(todos) {
-    // Delete all nodes
+    //reset dei valori al refresh della pagina
     while (this.todoList.firstChild) {
       this.todoList.removeChild(this.todoList.firstChild);
     }
 
-    // Show default message
+    //se non ci sono task esistenti manda a schermo un messaggio
     if (todos.length === 0) {
       const p = this.createElement("p");
       p.textContent = "Nothing to do! Add a task?";
       this.todoList.append(p);
     } else {
-      // Create nodes
+      //stampa a schermo la lista dei task ciclando l'array
       todos.forEach((todo) => {
         const li = this.createElement("li");
         li.id = todo.id;
@@ -140,15 +146,13 @@ class View {
         deleteButton.textContent = "Delete";
         li.append(checkbox, span, deleteButton);
 
-        // Append nodes
+        //aggiunge l'elemento creato alla lista
         this.todoList.append(li);
       });
     }
-
-    // Debugging
-    console.log(todos);
   }
 
+  //se il task ha la proprietà editable "true" lo sovrascrive con il nuovo task
   _initLocalListeners() {
     this.todoList.addEventListener("input", (event) => {
       if (event.target.className === "editable") {
@@ -157,6 +161,7 @@ class View {
     });
   }
 
+  //da chiedere a Max
   bindAddTodo(handler) {
     this.form.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -215,6 +220,7 @@ class Controller {
 
     // Explicit this binding
     this.model.bindTodoListChanged(this.onTodoListChanged);
+
     this.view.bindAddTodo(this.handleAddTodo);
     this.view.bindEditTodo(this.handleEditTodo);
     this.view.bindDeleteTodo(this.handleDeleteTodo);
